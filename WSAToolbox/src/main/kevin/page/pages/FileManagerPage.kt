@@ -177,10 +177,11 @@ class FileManagerPage : Page("文件传输", Main.width/5*2,0,Main.width/10,Main
                     jFileChooser.dialogType = JFileChooser.SAVE_DIALOG
                     jFileChooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
                     if (jFileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION){
-                        LogUtils.debug("${Main.aDBCommand} pull \"$nowPath/${files[fileTable.selectedRow].first}\" \"${jFileChooser.selectedFile.toString().replace("\\","/")}${files[fileTable.selectedRow].first}\"")
+                        val path = jFileChooser.selectedFile.toString().replace("\\","/")
+                        LogUtils.debug("${Main.aDBCommand} pull \"$nowPath/${files[fileTable.selectedRow].first}\" \"${path}${if(!path.endsWith("/"))"/" else ""}${files[fileTable.selectedRow].first}\"")
                         message.text = "下载中..."
                         Main.window.update(Main.window.graphics)
-                        val process = Runtime.getRuntime().exec("${Main.aDBCommand} pull \"$nowPath/${files[fileTable.selectedRow].first}\" \"${jFileChooser.selectedFile.toString().replace("\\","/")}/${files[fileTable.selectedRow].first}\"")
+                        val process = Runtime.getRuntime().exec("${Main.aDBCommand} pull \"$nowPath/${files[fileTable.selectedRow].first}\" \"${path}${if(!path.endsWith("/"))"/" else ""}${files[fileTable.selectedRow].first}\"")
                         val br = BufferedReader(InputStreamReader(process.inputStream))
                         var line: String?
                         var lastLine = ""

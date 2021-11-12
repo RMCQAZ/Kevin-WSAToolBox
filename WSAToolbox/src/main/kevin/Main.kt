@@ -17,6 +17,7 @@ fun main() {
 object Main {
     private val adb by lazy {
         LogUtils.info("没有发现系统ADB或系统ADB异常，启用内置ADB")
+        isInADBEnabled = true
         val tmp = System.getProperty("java.io.tmpdir")
         val tmpDir = Files.createTempDirectory(Paths.get(tmp),"KevinWSAToolBox-ADB")
         val tmpDirFile = tmpDir.toFile()
@@ -26,9 +27,23 @@ object Main {
         fos.write(adb!!.readAllBytes())
         adb.close()
         fos.close()
+        LogUtils.info("释放ADB成功")
+        val winApi = this::class.java.getResourceAsStream("/platform-tools/AdbWinApi.dll")
+        val winApiFos = FileOutputStream(File("$tmpDirFile\\AdbWinApi.dll"))
+        winApiFos.write(winApi!!.readAllBytes())
+        winApi.close()
+        winApiFos.close()
+        LogUtils.info("释放AdbWinApi成功")
+        val winUsbApi = this::class.java.getResourceAsStream("/platform-tools/AdbWinUsbApi.dll")
+        val winUsbApiFos = FileOutputStream(File("$tmpDirFile\\AdbWinUsbApi.dll"))
+        winUsbApiFos.write(winUsbApi!!.readAllBytes())
+        winUsbApi.close()
+        winUsbApiFos.close()
+        LogUtils.info("释放AdbWinUsbApi成功")
         LogUtils.info("释放文件成功!")
         File("$tmpDirFile\\adb.exe")
     }
+    private var isInADBEnabled = false
     var aDBCommand = ""
     val window by lazy { JFrame() }
     var adbState = false
@@ -75,9 +90,10 @@ object Main {
         window.setLocationRelativeTo(null)
         window.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         window.isResizable = false
-        window.title = "Kevin WSA ToolBox|Kevin WSA 工具箱"
+        window.title = "Kevin WSA ToolBox|Kevin WSA 工具箱 V1.1"
         window.addWindowListener(object : WindowListener{
             override fun windowClosing(e: WindowEvent?) {
+                if (isInADBEnabled) Runtime.getRuntime().exec("$aDBCommand kill-server")
                 for (file in File(System.getProperty("java.io.tmpdir")).listFiles()?.filter { it.isDirectory && it.name.startsWith("KevinWSAToolBox",true) }?:return){
                     file.listFiles()!!.forEach { it.delete();LogUtils.info("清除$it") }
                     file.delete()
